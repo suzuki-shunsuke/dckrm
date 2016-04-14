@@ -1,0 +1,46 @@
+#!/bin/sh
+# dckrm - Remove Docker Containers
+# $ dckrm
+
+set -eu
+
+TMPFILE=/tmp/dckrm-$(date +%Y%m%d%H%M%S)
+
+_remove() {
+    docker rm $(grep -v "^ *#" $1 | grep -v "^ *$" | cut -f 1)
+    rm $1
+}
+
+if [ -e $TMPFILE ]
+then
+    echo "ERROR! temporary file $TMPFILE already exists!"
+    exit 1
+else
+    echo "# dckrm - Remove Docker Containers" > $TMPFILE
+    echo "# NAMES    IMAGE    COMMAND    CREATED    STATUS    PORTS" >> $TMPFILE
+    docker ps -a --format "{{.Names}}\t{{.Image}}\t{{.Command}}\t{{.CreatedAt}}\t{{.Status}}\t{{.Ports}}" >> $TMPFILE
+    vim $TMPFILE
+    while true
+    do
+        printf "Do you remove docker containers? [Y/n] > "
+        read answer
+
+        case $answer in
+            [Yy])
+                _remove $TMPFILE
+                break
+                ;;
+            "")
+                _remove $TMPFILE
+                break
+                ;;
+            n)
+                rm $TMPFILE
+                break
+                ;;
+
+            *)
+                ;;
+        esac
+    done
+fi

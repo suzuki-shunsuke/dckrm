@@ -1,0 +1,47 @@
+#!/bin/sh
+# dckrmi - Remove Docker Images
+# $ dckrmi
+
+set -eu
+
+TMPFILE=/tmp/dckrmi-$(date +%Y%m%d%H%M%S)
+
+_remove() {
+    docker rmi $(grep -v "^ *#" $1 | grep -v "^ *$" | cut -f 1)
+    rm $1
+}
+
+
+if [ -e $TMPFILE ]
+then
+    echo "ERROR! temporary file $TMPFILE already exists!"
+    exit 1
+else
+    echo "# dckrm - Remove Docker Images" > $TMPFILE
+    echo "# IMAGE ID    REPOSITORY    TAG    CREATED SINCE    SIZE" >> $TMPFILE
+    docker images --format "{{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.CreatedSince}}\t{{.Size}}" >> $TMPFILE
+    vim $TMPFILE
+    while true
+    do
+        printf "Do you remove docker images? [Y/n] > "
+        read answer
+
+        case $answer in
+            [Yy])
+                _remove $TMPFILE
+                break
+                ;;
+            "")
+                _remove $TMPFILE
+                break
+                ;;
+            n)
+                rm $TMPFILE
+                break
+                ;;
+
+            *)
+                ;;
+        esac
+    done
+fi
