@@ -7,13 +7,23 @@ Command Line tools for removing docker containers and images.
 
 ## Dependencies
 
-* docker
-* vim
+* Docker Engine
 
 ## Install
 
 Deploy these scripts in $PATH directory.
 
+## Variables
+
+### DCKRM_EDITOR 
+
+The editor which you edit temporary files with.
+The default value is "vi".
+
+### DCKRM_TEMPDIR
+
+The absolute directory path where temporary files are created.
+The default value is "/tmp".
 
 ## How to Use
 

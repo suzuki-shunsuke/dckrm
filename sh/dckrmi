@@ -4,7 +4,10 @@
 
 set -eu
 
-TMPFILE=/tmp/dckrmi-$(date +%Y%m%d%H%M%S)
+[ -v DCKRM_TEMPDIR ] || DCKRM_TEMPDIR="/tmp"
+[ -v DCKRM_EDITOR ] || DCKRM_EDITOR="vi"
+
+TEMPFILE=$DCKRM_TEMPDIR/dckrmi-$(date +%Y%m%d%H%M%S)
 
 _remove() {
     docker rmi $(grep -v "^ *#" $1 | grep -v "^ *$" | cut -f 1)
@@ -12,15 +15,15 @@ _remove() {
 }
 
 
-if [ -e $TMPFILE ]
+if [ -e $TEMPFILE ]
 then
-    echo "ERROR! temporary file $TMPFILE already exists!"
+    echo "ERROR! temporary file $TEMPFILE already exists!"
     exit 1
 else
-    echo "# dckrm - Remove Docker Images" > $TMPFILE
-    echo "# IMAGE ID    REPOSITORY    TAG    CREATED SINCE    SIZE" >> $TMPFILE
-    docker images --format "{{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.CreatedSince}}\t{{.Size}}" >> $TMPFILE
-    vim $TMPFILE
+    echo "# dckrm - Remove Docker Images" > $TEMPFILE
+    echo "# IMAGE ID    REPOSITORY    TAG    CREATED SINCE    SIZE" >> $TEMPFILE
+    docker images --format "{{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.CreatedSince}}\t{{.Size}}" >> $TEMPFILE
+    $DCKRM_EDITOR $TEMPFILE
     while true
     do
         printf "Do you remove docker images? [Y/n] > "
@@ -28,15 +31,15 @@ else
 
         case $answer in
             [Yy])
-                _remove $TMPFILE
+                _remove $TEMPFILE
                 break
                 ;;
             "")
-                _remove $TMPFILE
+                _remove $TEMPFILE
                 break
                 ;;
             n)
-                rm $TMPFILE
+                rm $TEMPFILE
                 break
                 ;;
 
